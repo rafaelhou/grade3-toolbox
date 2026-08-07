@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" rx="7" fill="#d9702f"/>
+  <!-- 工具箱本體 -->
+  <rect x="4" y="13" width="24" height="14" rx="2.5" fill="#fdf7ee"/>
+  <rect x="4" y="17.5" width="24" height="2" fill="#e0b48a"/>
+  <!-- 提把 -->
+  <path d="M11 13v-2.5a5 5 0 0 1 10 0V13" fill="none" stroke="#fdf7ee" stroke-width="2.6" stroke-linecap="round"/>
+  <!-- 鎖扣 -->
+  <rect x="14" y="16" width="4" height="5" rx="1" fill="#2f8f83"/>
+  <!-- 數字 3 -->
+  <text x="16" y="26" font-family="Georgia, serif" font-size="8" font-weight="700"
+        fill="#d9702f" text-anchor="middle">3</text>
+</svg>
