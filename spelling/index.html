@@ -1,0 +1,140 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>G3 拼字王 · 三年級工具箱</title>
+<meta name="description" content="G3 Spelling Bee 單字表的線上背誦工具：300 個單字，25 個一組共 12 組，有發音、中文意思、依序介紹與拼字練習。">
+<meta name="theme-color" content="#2f8f83">
+<link rel="icon" href="favicon.svg">
+<link rel="stylesheet" href="style.css">
+<script>
+  /* 有些靜態伺服器會把 /spelling/ 重導成 /spelling（去掉尾斜線），
+     相對路徑就會解析到上一層，words.js 會 404。補回斜線再載入。 */
+  (function () {
+    var p = location.pathname;
+    if (p && p.slice(-1) !== '/' && !/\.[a-z0-9]+$/i.test(p)) {
+      location.replace(p + '/' + location.search + location.hash);
+    }
+  })();
+</script>
+<meta property="og:title" content="G3 拼字王">
+<meta property="og:description" content="300 個 Spelling Bee 單字，有發音、中文意思與拼字練習。">
+<meta property="og:type" content="website">
+
+<header class="hero">
+  <div class="wrap">
+    <p class="kicker">G3 Spelling Bee · 2025</p>
+    <h1>拼字王</h1>
+    <p class="lede">整份單字表搬上來了，<strong>25 個一組</strong>，慢慢走完就好。<br>每個字都念得出來，也看得到中文意思。</p>
+
+    <div class="progress">
+      <div class="plevel">
+        <span class="pbadge" id="lvIcon">🐣</span>
+        <div>
+          <strong id="lvName">剛起步</strong>
+          <span id="lvCount">學會 0 / 0 個字</span>
+        </div>
+      </div>
+      <div class="pbar"><div class="pfill" id="pFill"></div></div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+<section id="groups">
+  <h2>選一組</h2>
+  <p class="intro">每一組 25 個字。<span class="dim">數字是這一組已經學會幾個。</span></p>
+  <div class="grouprow" id="groupRow"></div>
+</section>
+
+<nav class="tabs" id="tabs">
+  <button type="button" class="tab is-on" data-panel="intro">依序介紹</button>
+  <button type="button" class="tab" data-panel="list">單字表</button>
+  <button type="button" class="tab" data-panel="quiz">拼字練習</button>
+</nav>
+
+<!-- ── 依序介紹 ───────────────────────── -->
+<section class="panel is-on" id="panel-intro">
+  <div class="card-stage">
+    <div class="cardhead">
+      <span class="idx" id="cIdx">1 / 25</span>
+      <span class="gname" id="cGroup">第 1 組</span>
+    </div>
+
+    <div class="wordcard">
+      <p class="theword" id="cWord">—</p>
+      <p class="thezh" id="cZh">—</p>
+      <button type="button" class="speak big" id="cSpeak" aria-label="播放發音">🔊 念一次</button>
+    </div>
+
+    <label class="learned">
+      <input type="checkbox" id="cLearned">
+      <span>這個字我會了</span>
+    </label>
+
+    <div class="navrow">
+      <button type="button" class="nav" id="cPrev">← 上一個</button>
+      <button type="button" class="nav primary" id="cNext">下一個 →</button>
+    </div>
+    <p class="hint">鍵盤：<kbd>←</kbd> <kbd>→</kbd> 換字，<kbd>空白鍵</kbd> 再念一次</p>
+
+    <div class="dots" id="cDots"></div>
+  </div>
+</section>
+
+<!-- ── 單字表 ─────────────────────────── -->
+<section class="panel" id="panel-list">
+  <div class="listtools">
+    <button type="button" class="nav" id="playAll">▶ 整組念一遍</button>
+    <button type="button" class="nav" id="stopAll" hidden>■ 停止</button>
+  </div>
+  <ol class="wordlist" id="wordList"></ol>
+</section>
+
+<!-- ── 拼字練習 ───────────────────────── -->
+<section class="panel" id="panel-quiz">
+  <div class="quizbox" id="quizBox">
+    <p class="quizhint">聽發音，把單字拼出來。</p>
+    <button type="button" class="speak big" id="qSpeak">🔊 再念一次</button>
+    <p class="qzh" id="qZh"></p>
+    <form id="qForm" autocomplete="off">
+      <input type="text" id="qInput" class="qinput" placeholder="在這裡打字…"
+             autocapitalize="off" autocorrect="off" spellcheck="false" aria-label="輸入單字">
+      <button type="submit" class="nav primary">看答案</button>
+    </form>
+    <p class="qfeed" id="qFeed"></p>
+    <div class="qscore">
+      <span>這一輪：<strong id="qRight">0</strong> 對 · <strong id="qWrong">0</strong> 錯</span>
+      <button type="button" class="nav small" id="qReset">重新開始</button>
+    </div>
+  </div>
+</section>
+
+<section id="tips">
+  <h2>怎麼用最有效</h2>
+  <div class="steps">
+    <div class="step"><span class="n">1</span><p><strong>先走「依序介紹」。</strong>一次只看一個字，聽兩次、跟著念出來，再看中文。</p></div>
+    <div class="step"><span class="n">2</span><p><strong>再用「拼字練習」驗收。</strong>只聽聲音就要拼得出來，才算真的會。</p></div>
+    <div class="step"><span class="n">3</span><p><strong>一天一組就夠。</strong>25 個字大概 10 分鐘，隔天先把昨天那組快速過一遍再前進。</p></div>
+  </div>
+  <p class="note">學會的字記在這台裝置的瀏覽器裡，不會上傳，也不需要帳號。換裝置要重新開始。</p>
+</section>
+
+<section id="voicehelp" hidden>
+  <div class="warnbox" id="voiceWarn"></div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p class="small">單字內容取自學校發的 G3 Spelling Bee Words（2025）。中文意思為個人整理，僅供背誦參考，實際用法以課堂與字典為準。</p>
+    <p><a href="../">← 回三年級工具箱</a></p>
+  </div>
+</footer>
+
+<div class="fabs">
+  <button type="button" id="themeBtn" class="fab" aria-pressed="false">🌙 深色</button>
+</div>
+
+<script src="words.js"></script>
+<script src="app.js"></script>
