@@ -84,7 +84,7 @@ window.SUBJECTS = [
   groups: [
     { kind: 'play', title: '動手玩', note: '', items: [
       { t: 'G3 拼字王（本站）', u: 'spelling/',
-        d: '學校那份 <b>G3 Spelling Bee</b> 單字表搬上來了，300 個字、25 個一組。有發音、中文意思、依序介紹與拼字練習，學會的字會自己記起來。',
+        d: '學校那份 <b>G3 Spelling Bee</b> 單字表搬上來了，300 個字、30 個一組。有發音、中文意思、依序介紹與拼字練習，學會的字會自己記起來。',
         lang: '中文介面', acc: '免費' },
       { t: 'Cool English 英語線上學習平台', u: 'https://www.coolenglish.edu.tw/',
         d: '教育部出資做的，有國小專區，<b>全中文介面</b>——孩子自己就能操作，不會卡在看不懂選單。',
