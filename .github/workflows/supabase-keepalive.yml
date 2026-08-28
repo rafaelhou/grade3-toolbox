@@ -1,0 +1,51 @@
+# ═══════════════════════════════════════════════════════════
+# Supabase 保活
+#
+# 免費方案的專案連續 7 天沒有活動就會被自動暫停，暫停後訪問
+# 計數器會連不上（counter.js 會把整塊藏起來），要手動進
+# Dashboard 才能恢復。
+#
+# 這個排程每週一、四各戳一次 get_counter —— 只讀取、不遞增，
+# 所以不會灌水計數。
+#
+# 網址和 anon key 跟 counter.js 裡的一樣，本來就公開在前端
+# 原始碼，不需要放進 Secrets。
+# ═══════════════════════════════════════════════════════════
+name: Supabase keep-alive
+
+on:
+  schedule:
+    # 每週一、四 03:00 UTC（台灣時間 11:00），間隔都在 7 天內
+    - cron: '0 3 * * 1,4'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 呼叫 get_counter
+        env:
+          SUPABASE_URL: https://ciptftupkllmwwnrqmkt.supabase.co
+          SUPABASE_ANON: sb_publishable_wlrk7HnxRKzo2bhSsRgbEQ_U4KzaFZz
+        run: |
+          set -uo pipefail
+
+          # 抓 body，最後一行是 HTTP 狀態碼。
+          # curl 自己失敗時（DNS、逾時）狀態碼會是 000，一樣走下面的檢查，
+          # 所以這裡刻意不讓 set -e 提前中斷。
+          response=$(curl -sS --max-time 30 -w '\n%{http_code}' \
+            -X POST "$SUPABASE_URL/rest/v1/rpc/get_counter" \
+            -H "apikey: $SUPABASE_ANON" \
+            -H "Authorization: Bearer $SUPABASE_ANON" \
+            -H 'Content-Type: application/json' \
+            -d '{"counter_id":"grade3"}') || true
+
+          status=$(printf '%s' "$response" | tail -n 1)
+          body=$(printf '%s' "$response" | sed '$d')
+
+          echo "HTTP $status — $body"
+
+          if [ "$status" != "200" ]; then
+            echo "::error::Supabase 沒有正常回應（HTTP $status）。專案可能已經被暫停，請到 Dashboard 檢查。"
+            exit 1
+          fi
