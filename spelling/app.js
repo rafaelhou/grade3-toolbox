@@ -3,7 +3,7 @@
   'use strict';
 
   var WORDS = window.WORDS || [];
-  var SIZE = window.GROUP_SIZE || 30;
+  var SIZE = window.GROUP_SIZE || 25;
   var KEY = 'g3spell.v1';
 
   var groups = [];

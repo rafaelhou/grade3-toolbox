@@ -1,14 +1,17 @@
 /* G3 Spelling Bee 單字庫（2025）
  *
- * 依照原始單字表的順序排列，30 個字一組，共 300 字 10 組。
+ * 依照原始單字表的順序排列，25 個字一組，共 300 字 12 組。
  * 只要改這個檔案，分組、進度、練習題都會自動跟上。
+ *
+ * 改一組幾個字：只要動最下面的 GROUP_SIZE。已經學會的字不會跑掉——
+ * 進度是用單字在這個陣列裡的絕對位置存的，不是「第幾組第幾個」。
  *
  * 格式：{ w: '單字', z: '中文意思' }
  *
  * 兩頁紙本已逐格核對完成（2026-08）。
  */
 window.WORDS = [
-  // ── 第 1 組　1–30 ──────────────────
+  // ── 第 1 組　1–25 ───────────────
   { w: 'admire', z: '欽佩、讚賞' },
   { w: 'classmate', z: '同班同學' },
   { w: 'community', z: '社區、群體' },
@@ -34,13 +37,13 @@ window.WORDS = [
   { w: 'grand', z: '宏偉的' },
   { w: 'landmark', z: '地標' },
   { w: 'massive', z: '巨大的' },
+  // ── 第 2 組　26–50 ──────────────
   { w: 'monument', z: '紀念碑' },
   { w: 'national', z: '國家的' },
   { w: 'traces', z: '痕跡；追溯' },
   { w: 'argumentative text', z: '論說文' },
   { w: 'sequoia', z: '紅杉' },
 
-  // ── 第 2 組　31–60 ─────────────────
   { w: 'arrived', z: '抵達（過去式）' },
   { w: 'immigrated', z: '移入、移民（過去式）' },
   { w: 'inspected', z: '檢查（過去式）' },
@@ -61,6 +64,7 @@ window.WORDS = [
   { w: 'fairy tale', z: '童話' },
   { w: 'figurative language', z: '譬喻性語言' },
   { w: 'poem', z: '詩' },
+  // ── 第 3 組　51–75 ──────────────
   { w: 'amount', z: '數量、總額' },
   { w: 'astronomy', z: '天文學' },
   { w: 'cite', z: '引用、舉出' },
@@ -72,7 +76,6 @@ window.WORDS = [
   { w: 'expository text', z: '說明文' },
   { w: 'summarize', z: '摘要、總結' },
 
-  // ── 第 3 組　61–90 ─────────────────
   { w: 'disbelief', z: '不相信' },
   { w: 'dismay', z: '沮喪、驚愕' },
   { w: 'fabulous', z: '極好的' },
@@ -88,6 +91,7 @@ window.WORDS = [
   { w: 'attention', z: '注意力' },
   { w: 'audience', z: '觀眾、聽眾' },
   { w: 'confidence', z: '自信' },
+  // ── 第 4 組　76–100 ─────────────
   { w: 'embarrassed', z: '尷尬的' },
   { w: 'realize', z: '領悟、實現' },
   { w: 'talent', z: '才能' },
@@ -104,7 +108,6 @@ window.WORDS = [
   { w: 'sentence clue', z: '句中線索' },
   { w: 'bold print', z: '粗體字' },
 
-  // ── 第 4 組　91–120 ────────────────
   { w: 'adventurous', z: '愛冒險的' },
   { w: 'courageous', z: '勇敢的' },
   { w: 'extremely', z: '極度地' },
@@ -115,6 +118,7 @@ window.WORDS = [
   { w: 'rhyme', z: '押韻' },
   { w: 'poetry', z: '詩歌（總稱）' },
   { w: 'haiku', z: '俳句' },
+  // ── 第 5 組　101–125 ────────────
   { w: 'essay', z: '短文、散文' },
   { w: 'opinion', z: '意見、看法' },
   { w: 'rubric', z: '評分標準' },
@@ -136,12 +140,12 @@ window.WORDS = [
   { w: 'agreeable', z: '令人愉快的；同意的' },
   { w: 'appreciate', z: '感謝、欣賞' },
 
-  // ── 第 5 組　121–150 ───────────────
   { w: 'boomed', z: '迅速成長（過去式）' },
   { w: 'descendant', z: '後代、子孫' },
   { w: 'population', z: '人口' },
   { w: 'resource', z: '資源' },
   { w: 'transportation', z: '交通運輸' },
+  // ── 第 6 組　126–150 ────────────
   { w: 'vehicle', z: '車輛' },
   { w: 'passage', z: '文章段落；通道' },
   { w: 'social studies', z: '社會科' },
@@ -168,7 +172,7 @@ window.WORDS = [
   { w: 'suffix', z: '字尾' },
   { w: 'prefix', z: '字首' },
 
-  // ── 第 6 組　151–180 ───────────────
+  // ── 第 7 組　151–175 ────────────
   { w: 'telescope', z: '望遠鏡' },
   { w: 'invent', z: '發明' },
   { w: 'discover', z: '發現' },
@@ -194,13 +198,13 @@ window.WORDS = [
   { w: 'smart', z: '聰明的' },
   { w: 'sportswriter', z: '體育記者' },
   { w: 'photocopy', z: '影印' },
+  // ── 第 8 組　176–200 ────────────
   { w: 'roadside', z: '路邊' },
   { w: 'starlight', z: '星光' },
   { w: 'railroad', z: '鐵路' },
   { w: 'react', z: '反應' },
   { w: 'action', z: '行動' },
 
-  // ── 第 7 組　181–210 ───────────────
   { w: 'active', z: '活躍的、主動的' },
   { w: 'actor', z: '演員' },
   { w: 'fisherman', z: '漁夫' },
@@ -221,6 +225,7 @@ window.WORDS = [
   { w: 'acceptable', z: '可接受的' },
   { w: 'passable', z: '可通行的；還過得去的' },
   { w: 'brightness', z: '明亮' },
+  // ── 第 9 組　201–225 ────────────
   { w: 'preschool', z: '學前的、幼兒園' },
   { w: 'boneless', z: '無骨的' },
   { w: 'rebuilding', z: '重建' },
@@ -232,7 +237,6 @@ window.WORDS = [
   { w: 'stop', z: '停止' },
   { w: 'suppose', z: '假設、認為' },
 
-  // ── 第 8 組　211–240 ───────────────
   { w: 'hazardous', z: '危險的' },
   { w: 'satellite', z: '衛星' },
   { w: 'meteorologist', z: '氣象學家' },
@@ -248,6 +252,7 @@ window.WORDS = [
   { w: 'barometric', z: '氣壓的' },
   { w: 'blizzard', z: '暴風雪' },
   { w: 'hurricane', z: '颶風' },
+  // ── 第 10 組　226–250 ───────────
   { w: 'typhoon', z: '颱風' },
   { w: 'flood', z: '洪水' },
   { w: 'tornado', z: '龍捲風' },
@@ -264,7 +269,6 @@ window.WORDS = [
   { w: 'subpolar', z: '亞極地的' },
   { w: 'ecosystem', z: '生態系' },
 
-  // ── 第 9 組　241–270 ───────────────
   { w: 'climate', z: '氣候' },
   { w: 'mature', z: '成熟的' },
   { w: 'organism', z: '生物體' },
@@ -275,6 +279,7 @@ window.WORDS = [
   { w: 'inherit', z: '遺傳、繼承' },
   { w: 'variation', z: '變異、差異' },
   { w: 'influence', z: '影響' },
+  // ── 第 11 組　251–275 ───────────
   { w: 'adaptation', z: '適應' },
   { w: 'advantage', z: '優勢' },
   { w: 'impact', z: '衝擊、影響' },
@@ -296,12 +301,12 @@ window.WORDS = [
   { w: 'invertebrate', z: '無脊椎動物' },
   { w: 'dinosaur', z: '恐龍' },
 
-  // ── 第 10 組　271–300 ──────────────
   { w: 'investigation', z: '調查' },
   { w: 'equation', z: '方程式、等式' },
   { w: 'measurement', z: '測量' },
   { w: 'operation', z: '運算；操作' },
   { w: 'position', z: '位置' },
+  // ── 第 12 組　276–300 ───────────
   { w: 'direction', z: '方向' },
   { w: 'centrifugal', z: '離心的' },
   { w: 'momentum', z: '動量、衝勁' },
@@ -329,4 +334,4 @@ window.WORDS = [
   { w: 'magnetic field', z: '磁場' },
 ];
 
-window.GROUP_SIZE = 30;
+window.GROUP_SIZE = 25;
