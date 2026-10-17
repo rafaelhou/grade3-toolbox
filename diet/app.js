@@ -8,6 +8,8 @@ const DEF = { kcal: 2400, p: 146, c: 315, f: 62, goalWeight: null };
 const OLD_DEF = { kcal: 2400, p: 165, c: 275, f: 70 };
 const MEALS = [{ k: 'b', name: '早餐' }, { k: 'l', name: '午餐' }, { k: 'd', name: '晚餐' }, { k: 's', name: '點心' }];
 const WORKOUTS = ['休息', '胸', '背', '腿', '肩', '手臂', '核心', '有氧', '全身'];
+const ACT_TYPES = ['跑步', '走路', '負重健走', '騎車', '游泳', '重訓', '其他'];
+const PACED = ['跑步', '走路', '負重健走'];
 // 常見食物（份量與數值為概估，加入後可以點開修改）
 const FOODS = [
   { name: '雞胸肉', qty: '150 g', kcal: 170, p: 35, c: 0, f: 3 },
@@ -40,10 +42,13 @@ const n1 = v => (Math.round(v * 10) / 10).toString();
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 const num = v => { const x = parseFloat(v); return Number.isFinite(x) ? x : null; };
+const fmtDur = sec => { const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), x = Math.round(sec % 60); return h ? `${h}:${pad(m)}:${pad(x)}` : `${m}:${pad(x)}`; };
+const pace = a => { if (!PACED.includes(a.type) || !a.dist || !a.sec) return ''; const s = Math.round(a.sec / a.dist); return `${Math.floor(s / 60)}'${pad(s % 60)}"/km`; };
+const actKcal = day => (day?.acts || []).reduce((t, a) => t + (a.kcal || 0), 0);
 
 const state = { profile: { ...DEF }, days: {} };
 const ui = { tab: 'today', date: todayStr(), range: 7, meal: 'b', installHidden: false, lastBackup: null };
-let addedN = 0, quick = [], editId = null, lastDeleted = null, deferredInstall = null;
+let addedN = 0, quick = [], editId = null, lastDeleted = null, deferredInstall = null, actType = '跑步';
 
 /* ---------- 儲存（只存在這台裝置的 localStorage） ---------- */
 try {
@@ -100,7 +105,7 @@ function viewToday() {
         <span class="i-side"><b>${n0(i.kcal)}</b><small>蛋 ${n0(i.p)} · 碳 ${n0(i.c)} · 脂 ${n0(i.f)}</small></span></button>`).join('')}
       <button class="add" data-act="add" data-meal="${m.k}">＋ 新增${m.name}</button></section>`;
   }).join('');
-  const wo = day.workout || [];
+  const wo = day.workout || [], acts = day.acts || [];
   const wph = lastWeight();
   return `${topbar()}${installHTML()}
   <div class="datebar">
@@ -125,6 +130,13 @@ function viewToday() {
     ${meals}
   </div>
   <div class="card">
+    <h2>運動<small>${acts.length ? `消耗 ${n0(actKcal(day))} 大卡` : ''}</small></h2>
+    ${acts.map(a => `<button class="item" data-act="aedit" data-id="${a.id}"><span class="i-main"><span class="i-name">${esc(a.type)}${a.dist ? ` ${a.dist.toFixed(2)} km` : ''}</span><span class="i-qty">${[a.sec ? fmtDur(a.sec) : '', pace(a), a.hr ? `心率 ${a.hr}` : ''].filter(Boolean).join(' · ')}</span></span>
+      <span class="i-side"><b>${a.kcal ? n0(a.kcal) : '–'}</b><small>大卡</small></span></button>`).join('')}
+    <button class="add" data-act="aadd">＋ 新增運動</button>
+    <div class="field" style="margin-top:14px"><span>重訓部位</span><div class="qrow" id="wo-row">${WORKOUTS.map(w => `<button class="chip${wo.includes(w) ? ' on' : ''}" data-act="wo" data-v="${w}" aria-pressed="${wo.includes(w)}">${w}</button>`).join('')}</div></div>
+  </div>
+  <div class="card">
     <h2>身體狀況<small>輸入後自動儲存</small></h2>
     <div class="hgrid">
       <label class="field"><span>體重</span><span class="input-unit"><input class="input" id="h-weight" data-field="weight" inputmode="decimal" placeholder="${wph ? n1(wph) : '0.0'}" value="${day.weight ?? ''}"><em>kg</em></span></label>
@@ -133,7 +145,6 @@ function viewToday() {
       <label class="field"><span>睡眠</span><span class="input-unit"><input class="input" id="h-sleep" data-field="sleep" inputmode="decimal" placeholder="0" value="${day.sleep ?? ''}"><em>小時</em></span></label>
       <div class="field wide"><span>快速加水</span><div class="qrow"><button class="qbtn" data-act="water" data-n="250">+250 ml</button><button class="qbtn" data-act="water" data-n="500">+500 ml</button><button class="qbtn" data-act="water" data-n="-250">−250 ml</button></div></div>
       <label class="field wide"><span>步數</span><span class="input-unit"><input class="input" id="h-steps" data-field="steps" inputmode="numeric" placeholder="0" value="${day.steps ?? ''}"><em>步</em></span></label>
-      <div class="field wide"><span>今天練什麼</span><div class="qrow" id="wo-row">${WORKOUTS.map(w => `<button class="chip${wo.includes(w) ? ' on' : ''}" data-act="wo" data-v="${w}" aria-pressed="${wo.includes(w)}">${w}</button>`).join('')}</div></div>
       <label class="field wide"><span>備註</span><textarea class="input" id="h-note" data-field="note" placeholder="精神、肌肉痠痛、手錶消耗…">${esc(day.note || '')}</textarea></label>
     </div>
   </div>`;
@@ -193,7 +204,8 @@ function roText(kind, i, rows) {
   const r = rows[i]; if (!r) return '';
   const head = `<b>${shortD(r.d)} 週${WD[parseD(r.d).getDay()]}</b> · `;
   if (kind === 'wt') return head + (r.weight ? `<b>${n1(r.weight)}</b> kg${r.day?.bodyFat ? ` · 體脂 ${n1(r.day.bodyFat)}%` : ''}` : '沒有體重');
-  return head + (r.has ? `<b>${n0(r.kcal)}</b> 大卡 · 蛋白質 ${n0(r.p)} g · 碳水 ${n0(r.c)} g · 脂肪 ${n0(r.f)} g` : '沒有飲食紀錄');
+  const ak = actKcal(r.day);
+  return head + (r.has ? `<b>${n0(r.kcal)}</b> 大卡 · 蛋白質 ${n0(r.p)} g · 碳水 ${n0(r.c)} g · 脂肪 ${n0(r.f)} g` : '沒有飲食紀錄') + (ak ? ` · 運動消耗 ${n0(ak)} 大卡` : '');
 }
 function viewTrends() {
   const n = ui.range, rows = rangeRows(n), P = state.profile;
@@ -203,8 +215,8 @@ function viewTrends() {
   const ws = rows.filter(r => r.weight);
   const dW = ws.length > 1 ? ws[ws.length - 1].weight - ws[0].weight : null;
   const wchart = wtChart(rows);
-  const tbl = `<details class="tbl"><summary>顯示數據表</summary><div class="tbl-wrap"><table><thead><tr><th>日期</th><th>大卡</th><th>蛋白</th><th>碳水</th><th>脂肪</th><th>體重</th></tr></thead><tbody>
-    ${rows.slice().reverse().map(r => `<tr><td>${shortD(r.d)}</td><td>${r.has ? n0(r.kcal) : '–'}</td><td>${r.has ? n0(r.p) : '–'}</td><td>${r.has ? n0(r.c) : '–'}</td><td>${r.has ? n0(r.f) : '–'}</td><td>${r.weight ? n1(r.weight) : '–'}</td></tr>`).join('')}</tbody></table></div></details>`;
+  const tbl = `<details class="tbl"><summary>顯示數據表</summary><div class="tbl-wrap"><table><thead><tr><th>日期</th><th>大卡</th><th>蛋白</th><th>碳水</th><th>脂肪</th><th>運動</th><th>體重</th></tr></thead><tbody>
+    ${rows.slice().reverse().map(r => `<tr><td>${shortD(r.d)}</td><td>${r.has ? n0(r.kcal) : '–'}</td><td>${r.has ? n0(r.p) : '–'}</td><td>${r.has ? n0(r.c) : '–'}</td><td>${r.has ? n0(r.f) : '–'}</td><td>${actKcal(r.day) ? n0(actKcal(r.day)) : '–'}</td><td>${r.weight ? n1(r.weight) : '–'}</td></tr>`).join('')}</tbody></table></div></details>`;
   return `${topbar()}
   <div class="seg" role="group" aria-label="時間範圍"><button data-act="range" data-n="7" class="${n === 7 ? 'on' : ''}">近 7 天</button><button data-act="range" data-n="30" class="${n === 30 ? 'on' : ''}">近 30 天</button></div>
   <div class="tiles">
@@ -287,7 +299,24 @@ function recents() {
 }
 function openSheet(mode, arg) {
   const body = $('#sheet-body');
-  if (mode === 'edit') {
+  if (mode === 'act') {
+    editId = arg || null; const a = arg ? (state.days[ui.date]?.acts || []).find(x => x.id === arg) : null;
+    if (arg && !a) return;
+    actType = a?.type || actType;
+    const v = x => x ?? '';
+    body.innerHTML = `<div class="sheet-head"><h2 id="sh-title">${a ? '編輯運動' : '新增運動'}</h2><button class="icon-btn" data-act="close" aria-label="關閉">✕</button></div>
+      <div class="chips" id="act-type">${ACT_TYPES.map(t => `<button class="chip${t === actType ? ' on' : ''}" data-act="atype" data-v="${t}">${t}</button>`).join('')}</div>
+      <div class="aform">
+        <label class="field"><span>距離</span><span class="input-unit"><input class="input" id="a-dist" inputmode="decimal" value="${v(a?.dist)}" placeholder="0.00"><em>km</em></span></label>
+        <label class="field"><span>消耗</span><span class="input-unit"><input class="input" id="a-kcal" inputmode="numeric" value="${v(a?.kcal)}" placeholder="0"><em>大卡</em></span></label>
+        <label class="field"><span>時間（分）</span><span class="input-unit"><input class="input" id="a-min" inputmode="numeric" value="${a?.sec ? Math.floor(a.sec / 60) : ''}" placeholder="0"><em>分</em></span></label>
+        <label class="field"><span>（秒）</span><span class="input-unit"><input class="input" id="a-sec" inputmode="numeric" value="${a?.sec ? Math.round(a.sec % 60) : ''}" placeholder="0"><em>秒</em></span></label>
+        <label class="field"><span>平均心率</span><span class="input-unit"><input class="input" id="a-hr" inputmode="numeric" value="${v(a?.hr)}" placeholder="0"><em>bpm</em></span></label>
+        <p class="note" id="a-pace" style="align-self:end"></p>
+      </div>
+      <div class="sheet-foot">${a ? '<button class="btn ghost" data-act="adel">刪除</button>' : '<span></span>'}<button class="btn" data-act="asave">儲存</button></div>`;
+    updPace();
+  } else if (mode === 'edit') {
     editId = arg; const it = (state.days[ui.date]?.items || []).find(i => i.id === arg); if (!it) return;
     body.innerHTML = `<div class="sheet-head"><h2 id="sh-title">編輯食物</h2><button class="icon-btn" data-act="close" aria-label="關閉">✕</button></div>${mform(it)}
       <div class="sheet-foot"><button class="btn ghost" data-act="del">刪除</button><button class="btn" data-act="save">儲存</button></div>`;
@@ -303,6 +332,22 @@ function openSheet(mode, arg) {
       <div class="sheet-foot"><span class="count" id="added-n"></span><button class="btn" data-act="close">完成</button></div>`;
   }
   $('#sheet').hidden = false; document.documentElement.classList.add('lock'); body.scrollTop = 0;
+}
+function readAct() {
+  const dist = num($('#a-dist').value), kcal = num($('#a-kcal').value), hr = num($('#a-hr').value);
+  const sec = (num($('#a-min').value) || 0) * 60 + (num($('#a-sec').value) || 0);
+  if (!dist && !sec && !kcal) { toast('至少填距離、時間或消耗其中一項'); return null; }
+  const a = { type: actType };
+  if (dist) a.dist = Math.round(dist * 100) / 100;
+  if (sec) a.sec = sec;
+  if (kcal) a.kcal = Math.round(kcal);
+  if (hr) a.hr = Math.round(hr);
+  return a;
+}
+function updPace() {
+  const el = $('#a-pace'); if (!el) return;
+  const p = pace({ type: actType, dist: num($('#a-dist').value), sec: (num($('#a-min').value) || 0) * 60 + (num($('#a-sec').value) || 0) });
+  el.textContent = p ? `配速 ${p}` : '';
 }
 function closeSheet() { $('#sheet').hidden = true; document.documentElement.classList.remove('lock'); render(); }
 function addItem(it) {
@@ -366,6 +411,21 @@ document.addEventListener('click', async e => {
     case 'meal': ui.meal = D.meal; document.querySelectorAll('#meal-seg button').forEach(b => b.classList.toggle('on', b.dataset.meal === ui.meal)); break;
     case 'quick': { const f = quick[+D.i]; addItem({ name: f.name, qty: f.qty, kcal: f.kcal, p: f.p, c: f.c, f: f.f }); t.animate?.([{ transform: 'scale(.94)' }, { transform: 'scale(1)' }], 160); break; }
     case 'manual': { const it = readForm(); if (it) { addItem(it); ['name', 'qty', 'kcal', 'p', 'c', 'f'].forEach(k => { $('#m-' + k).value = ''; }); } break; }
+    case 'aadd': openSheet('act'); break;
+    case 'aedit': openSheet('act', D.id); break;
+    case 'atype': actType = D.v; document.querySelectorAll('#act-type .chip').forEach(b => b.classList.toggle('on', b.dataset.v === actType)); updPace(); break;
+    case 'asave': {
+      const a = readAct(); if (!a) break;
+      const day = ensureDay(ui.date); day.acts ||= [];
+      const i = editId ? day.acts.findIndex(x => x.id === editId) : -1;
+      if (i >= 0) day.acts[i] = { id: editId, ...a }; else day.acts.push({ id: uid(), ...a });
+      save(); closeSheet(); break;
+    }
+    case 'adel': {
+      const acts = state.days[ui.date].acts, idx = acts.findIndex(x => x.id === editId);
+      acts.splice(idx, 1); if (!acts.length) delete state.days[ui.date].acts;
+      save(); closeSheet(); toast('已刪除運動'); break;
+    }
     case 'save': { const it = readForm(); if (it) { Object.assign(state.days[ui.date].items.find(i => i.id === editId), it); save(); closeSheet(); } break; }
     case 'del': { const items = state.days[ui.date].items, idx = items.findIndex(i => i.id === editId); lastDeleted = { date: ui.date, idx, it: items[idx] }; items.splice(idx, 1); save(); closeSheet(); toast('已刪除', { act: 'undo', label: '復原' }); break; }
     case 'undo': if (lastDeleted) { ensureDay(lastDeleted.date).items.splice(lastDeleted.idx, 0, lastDeleted.it); save(); lastDeleted = null; $('#toast').hidden = true; render(); } break;
@@ -403,6 +463,7 @@ document.addEventListener('change', e => {
     setTimeout(() => { const a = document.activeElement; if (ui.tab === 'settings' && !(a && a.tagName === 'INPUT')) { render(); window.scrollTo(0, sy); } }, 0);
   }
 });
+document.addEventListener('input', e => { if (/^a-(dist|min|sec)$/.test(e.target.id)) updPace(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#sheet').hidden) closeSheet(); });
 
 // App 一直開著跨過午夜：回到畫面時，原本在看「今天」就跳到新的一天
