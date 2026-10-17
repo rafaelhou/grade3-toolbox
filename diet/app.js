@@ -2,7 +2,10 @@
 'use strict';
 const KEY = 'dietlog.v1';
 const KEY_UI = 'dietlog.ui';
-const DEF = { kcal: 2400, p: 165, c: 275, f: 70, goalWeight: null };
+// 體重 73 kg、維持體重：蛋白質 2.0 g/kg、脂肪 0.85 g/kg，其餘給碳水
+const DEF = { kcal: 2400, p: 146, c: 315, f: 62, goalWeight: null };
+// 第一版的預設值（82.1 kg 時算的）。手機上存的還是這組、代表沒改過，就換成新的預設值
+const OLD_DEF = { kcal: 2400, p: 165, c: 275, f: 70 };
 const MEALS = [{ k: 'b', name: '早餐' }, { k: 'l', name: '午餐' }, { k: 'd', name: '晚餐' }, { k: 's', name: '點心' }];
 const WORKOUTS = ['休息', '胸', '背', '腿', '肩', '手臂', '核心', '有氧', '全身'];
 // 常見食物（份量與數值為概估，加入後可以點開修改）
@@ -49,6 +52,7 @@ try {
   const u = JSON.parse(localStorage.getItem(KEY_UI) || 'null');
   if (u) { ui.installHidden = !!u.installHidden; ui.lastBackup = u.lastBackup || null; }
 } catch (e) {}
+if (['kcal', 'p', 'c', 'f'].every(k => state.profile[k] === OLD_DEF[k])) ['kcal', 'p', 'c', 'f'].forEach(k => { state.profile[k] = DEF[k]; });
 let saveFailed = false;
 function save() {
   try { localStorage.setItem(KEY, JSON.stringify(state)); saveFailed = false; }
