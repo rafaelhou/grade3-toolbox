@@ -1,5 +1,6 @@
 (() => {
 'use strict';
+const VERSION = '2026-10-17 · 4';
 const KEY = 'dietlog.v1';
 const KEY_UI = 'dietlog.ui';
 // 體重 73 kg、維持體重：蛋白質 2.0 g/kg、脂肪 0.85 g/kg，其餘給碳水
@@ -259,7 +260,7 @@ function viewSettings() {
     </div>
     <p class="note">匯入時，備份裡有的日期會蓋掉手機上同一天的資料，其他日期保留。</p>
   </div>
-  <p class="note" style="text-align:center">熱量與營養素都是估算，只供參考，不是醫療建議。</p>`;
+  <p class="note" style="text-align:center">熱量與營養素都是估算，只供參考，不是醫療建議。<br>版本 ${VERSION}</p>`;
 }
 
 /* ---------- render ---------- */
@@ -475,5 +476,11 @@ document.addEventListener('visibilitychange', () => {
 });
 
 render();
-if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+if ('serviceWorker' in navigator) {
+  // 新版的離線快取接手時重新載入一次，畫面才會換成新版
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (hadController && !reloaded && $('#sheet').hidden) { reloaded = true; location.reload(); } });
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
 })();
