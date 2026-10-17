@@ -46,6 +46,7 @@ zhuyin-run.js         標注程式，必須在 app.js 渲染完之後執行
 counter.js            Supabase 瀏覽計數
 sql/counter.sql       計數器的資料庫設定
 spelling/             G3 拼字王（獨立子頁，見該資料夾的 README）
+diet/                 飲食健康日誌（個人用的手機 App，首頁沒有連結，見該資料夾的 README）
 ```
 
 ### 加資源
