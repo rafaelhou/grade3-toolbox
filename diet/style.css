@@ -48,6 +48,8 @@ body {
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   -webkit-text-size-adjust: 100%;
 }
+/* 狀態列那一條塗上底色，往下捲時內容才不會疊在時間、電量後面 */
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); background: var(--plane); z-index: 30; }
 html.lock, html.lock body { overflow: hidden; }
 #app { max-width: 560px; margin: 0 auto; display: flex; flex-direction: column; gap: 14px; }
 h1, h2, h3, h4, p { margin: 0; }
